@@ -1,0 +1,4 @@
+1 ls
+2 pwd
+3 ls art
+4 ./test.out
