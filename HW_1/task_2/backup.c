@@ -42,7 +42,6 @@ void make_directory(char source_path[], char relative_path[]){
 }
 
 void copy_to_drain(char source_path[], char drain_path[]){
-    printf("%s\n%s\n",source_path, drain_path);
     pid_t pid = fork();
     if (pid == 0){
         char * command[] = {"cp", source_path, drain_path, NULL};
@@ -51,7 +50,7 @@ void copy_to_drain(char source_path[], char drain_path[]){
         int status;
         waitpid(pid, &status, 0);
     }else {
-        printf("fork error");
+        perror("fork error");
     }
 }
 
@@ -64,7 +63,7 @@ void to_gz(char drain_path[]){
         int status;
         waitpid(pid, &status, 0);
     }else {
-        printf("fork error");
+        perror("fork error");
     }
 }
 
@@ -83,6 +82,9 @@ void backup_dir(char source_name[],char drain_name[]){
         snprintf(source_path, sizeof(source_path), "%s/%s", source_name, entry->d_name);
         snprintf(drain_path, sizeof(drain_path), "%s/%s", drain_name, entry->d_name);
         if (entry->d_type == DT_DIR){
+            if (!strcmp(source_path, drain_name)){
+                continue;
+            }
             if (!file_exists(path)){
                 make_directory(source_path, drain_path);
             }
@@ -101,5 +103,17 @@ void backup_dir(char source_name[],char drain_name[]){
 
 int main(int argc, char *argv[])
 {   
+    if (argc != 3){
+        printf("wrong arguments\n");
+        return 0;
+    }
+    if (!file_exists(argv[2]) || !file_exists(argv[1])){
+        printf("such folder does not exist\n");
+        return 0;
+    }
+    if (!strcmp(argv[1], argv[2])){
+        printf("directories cannot match\n");
+        return 0;
+    }
     backup_dir(argv[1], argv[2]);
 }
