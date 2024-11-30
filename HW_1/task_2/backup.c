@@ -81,7 +81,11 @@ void backup_dir(char source_name[],char drain_name[]){
         char drain_path[1024];
         snprintf(source_path, sizeof(source_path), "%s/%s", source_name, entry->d_name);
         snprintf(drain_path, sizeof(drain_path), "%s/%s", drain_name, entry->d_name);
-        if (entry->d_type == DT_DIR){
+
+        struct stat source_stat;
+        stat(source_path, &source_stat);
+        
+        if (S_ISDIR(source_stat.st_mode)){
             if (!strcmp(source_path, drain_name)){
                 continue;
             }
@@ -90,7 +94,7 @@ void backup_dir(char source_name[],char drain_name[]){
             }
             backup_dir(source_path, drain_path);
         }
-        else{
+        else if (S_ISREG(source_stat.st_mode)){
             char drain_path_with_gz[1024];
             snprintf(drain_path_with_gz, sizeof(drain_path_with_gz), "%s.%s", drain_path, "gz");
             if (is_need_backup(source_path, drain_path_with_gz)){
